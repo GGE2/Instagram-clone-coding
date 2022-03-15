@@ -2,6 +2,7 @@
     <string name="app_name">GGEstagram</string>
     <string name="facebook_app_id">1540447283006028</string>
     <string name="fb_login_protocol_scheme">fb1540447283006028</string>
+    <string name="client_id_toekn">317986852594-fjheqr2faod4ppvdlcuis7kamu0gsqqp.apps.googleusercontent.com</string>
 
     <!-- Sign In -->
     <string name="email">Email</string>
@@ -52,4 +53,6 @@
     <!-- etc -->
     <item name="visible" type="id" />
     <item name="masked" type="id" />
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

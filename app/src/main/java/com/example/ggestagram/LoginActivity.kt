@@ -44,6 +44,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener{
 
     private val GOOGLE_LOGIN_CODE = -1
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
@@ -53,6 +54,8 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener{
         login_btn1.setOnClickListener(this)
         login_btn2.setOnClickListener(this)
         login_btn3.setOnClickListener(this)
+
+
 
         var gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken("317986852594-fjheqr2faod4ppvdlcuis7kamu0gsqqp.apps.googleusercontent.com")
@@ -65,6 +68,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener{
         //printHashKey()*/
 
     }
+
 
     override fun onClick(p0: View?) {
         when(p0?.id){
@@ -117,6 +121,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener{
 */
         }
     }
+
     fun facebookLogin(){
         LoginManager.getInstance()
             .logInWithReadPermissions(this, Arrays.asList("public_profile","email"))
@@ -127,12 +132,17 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener{
                 }
 
                 override fun onCancel() {
+
                 }
 
                 override fun onError(error: FacebookException?) {
+
                 }
             })
     }
+
+
+
     fun handleFaceBookAccessToken(token: AccessToken?){
         var credential = FacebookAuthProvider.getCredential(token?.token!!)
         auth?.signInWithCredential(credential)?.
@@ -152,6 +162,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener{
         }
 
     }
+
     override fun onActivityResult(requestCode:Int , resultCode : Int, data:Intent?){
         callbackManager?.onActivityResult(requestCode,resultCode,data)
         super.onActivityResult(requestCode,resultCode,data)
@@ -170,9 +181,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener{
             else {
                 //Show the error message
                 Toast.makeText(this,it.exception?.message,Toast.LENGTH_SHORT).show()
-
             }
-
         }
     }
 
@@ -218,6 +227,8 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener{
         }
 
     }
+
+
     fun moveMainPage(user: FirebaseUser?){
         if(user!=null){
             Log.e(TAG,"movemainpage ")
