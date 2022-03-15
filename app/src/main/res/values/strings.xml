@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">GGEstagram</string>
-    <string name="facebook_app_id">592638904497102</string>
-    <string name="fb_login_protocol_scheme">fb592638904497102</string>
+    <string name="facebook_app_id">1540447283006028</string>
+    <string name="fb_login_protocol_scheme">fb1540447283006028</string>
 
     <!-- Sign In -->
     <string name="email">Email</string>

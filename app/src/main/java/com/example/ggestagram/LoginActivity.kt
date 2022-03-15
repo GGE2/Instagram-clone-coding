@@ -3,13 +3,19 @@ package com.example.ggestagram
 import android.app.Activity
 import android.app.Instrumentation
 import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Base64
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
+import com.facebook.*
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.common.api.ApiException
@@ -19,11 +25,23 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.activity_login.*
 import java.lang.Exception
+import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
+import com.google.android.gms.common.util.ClientLibraryUtils.getPackageInfo
+import com.google.firebase.auth.FacebookAuthProvider
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
+import java.util.*
 
-class LoginActivity : AppCompatActivity() {
+
+class LoginActivity : AppCompatActivity(), View.OnClickListener{
 
     var auth : FirebaseAuth? = null
     var googleSignInClient : GoogleSignInClient? = null
+    var callbackManager : CallbackManager? = null
+
+
     private val GOOGLE_LOGIN_CODE = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,23 +50,47 @@ class LoginActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
 
 
+        login_btn1.setOnClickListener(this)
+        login_btn2.setOnClickListener(this)
+        login_btn3.setOnClickListener(this)
 
         var gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken("317986852594-fjheqr2faod4ppvdlcuis7kamu0gsqqp.apps.googleusercontent.com")
             .requestEmail()
             .build()
 
+
         googleSignInClient = GoogleSignIn.getClient(this,gso)
-        //이메일 로그인
-        login_btn1.setOnClickListener {
-            signinAndSignup()
-        }
-        //구글 로그인
-        login_btn3.setOnClickListener {
-           googleLogin()
-        }
+        callbackManager = CallbackManager.Factory.create()
+        //printHashKey()*/
 
     }
+
+    override fun onClick(p0: View?) {
+        when(p0?.id){
+            R.id.login_btn1 -> signinAndSignup()
+            R.id.login_btn2 -> facebookLogin()
+            R.id.login_btn3 -> googleLogin()
+
+        }
+    }
+
+    /*fun printHashKey() {
+        try {
+            val info = packageManager.getPackageInfo(packageName,PackageManager.GET_SIGNATURES)
+            for (signature in info.signatures) {
+                val md = MessageDigest.getInstance("SHA")
+                md.update(signature.toByteArray());
+                val hashKey = String(Base64.encode(md.digest(),0))
+                Log.i(TAG, "printHashKey() Hash Key: " + hashKey);
+            }
+        } catch (e: NoSuchAlgorithmException) {
+            Log.e(TAG, "printHashKey()", e);
+        } catch (e: Exception) {
+            Log.e(TAG, "printHashKey()", e);
+        }
+    }*/
+
     fun googleLogin(){
         var signinIntent = googleSignInClient!!.signInIntent
         loginLauncher.launch(signinIntent)
@@ -74,6 +116,45 @@ class LoginActivity : AppCompatActivity() {
             }
 */
         }
+    }
+    fun facebookLogin(){
+        LoginManager.getInstance()
+            .logInWithReadPermissions(this, Arrays.asList("public_profile","email"))
+        LoginManager.getInstance()
+            .registerCallback(callbackManager,object: FacebookCallback<LoginResult>{
+                override fun onSuccess(result: LoginResult?) {
+                    handleFaceBookAccessToken(result?.accessToken)
+                }
+
+                override fun onCancel() {
+                }
+
+                override fun onError(error: FacebookException?) {
+                }
+            })
+    }
+    fun handleFaceBookAccessToken(token: AccessToken?){
+        var credential = FacebookAuthProvider.getCredential(token?.token!!)
+        auth?.signInWithCredential(credential)?.
+        addOnCompleteListener {
+                it->
+            if(it.isSuccessful){
+                //Login Success
+                Log.e(TAG,"signinEmail ")
+                moveMainPage(it.result.user)
+            }
+            else {
+                //Show the error message
+                Toast.makeText(this,it.exception?.message,Toast.LENGTH_SHORT).show()
+
+            }
+
+        }
+
+    }
+    override fun onActivityResult(requestCode:Int , resultCode : Int, data:Intent?){
+        callbackManager?.onActivityResult(requestCode,resultCode,data)
+        super.onActivityResult(requestCode,resultCode,data)
     }
 
     private fun firebaseAuthWithGoogle(account: GoogleSignInAccount?) {
