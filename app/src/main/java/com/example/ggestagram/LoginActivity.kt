@@ -7,11 +7,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Base64
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
@@ -102,8 +105,6 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener{
     private val loginLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
         Log.e("REQSULT CODE Start= ",it.resultCode.toString())
         if(it.resultCode == Activity.RESULT_OK){
-            Log.e("REQSULT CODE IN= ",it.resultCode.toString())
-            Log.e("REQUEST CODE In = ",it.resultCode.toString())
             val task = Auth.GoogleSignInApi.getSignInResultFromIntent(it.data!!)
             if(task!!.isSuccess){
                 var account = task.signInAccount
@@ -192,14 +193,13 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener{
             if(it.isSuccessful){
                 Log.e(TAG,"signup ")
                 moveMainPage(it.result.user)
-
                 //Create a user account
             }else if(it.exception?.message.isNullOrEmpty()){
                 //Show the error message
                 Log.e(TAG,"signup null ")
                 Toast.makeText(this,it.exception?.message,Toast.LENGTH_SHORT).show()
             }else{
-                Log.e(TAG,"signinEmail ")
+                Log.e(TAG,"signinEmail first")
                 signinEmail()
                 //Login if you have account
             }
@@ -210,12 +210,12 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener{
     }
 
     fun signinEmail(){
-        auth?.createUserWithEmailAndPassword(login_email_edittext.text.toString(),login_pw_edittext.text.toString())?.
+        auth?.signInWithEmailAndPassword(login_email_edittext.text.toString(),login_pw_edittext.text.toString())?.
         addOnCompleteListener {
                 it->
             if(it.isSuccessful){
                 //Login Success
-                Log.e(TAG,"signinEmail ")
+                Log.e(TAG,"signinEmail second")
                 moveMainPage(it.result.user)
             }
             else {
@@ -235,6 +235,22 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener{
             startActivity(Intent(this,MainActivity::class.java))
         }
 
+    }
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        val focusView: View? = currentFocus
+        if (focusView != null) {
+            val rect = Rect()
+            focusView.getGlobalVisibleRect(rect)
+            val x = ev.x.toInt()
+            val y = ev.y.toInt()
+            if (!rect.contains(x, y)) {
+                val imm: InputMethodManager =
+                    getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(focusView.windowToken, 0)
+                focusView.clearFocus()
+            }
+        }
+        return super.dispatchTouchEvent(ev)
     }
 
 }
