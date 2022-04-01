@@ -10,6 +10,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.ggestagram.R
+import com.example.ggestagram.navigation.model.ContentDTO
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_add_photo.*
 import java.lang.String.format
@@ -21,7 +24,8 @@ class AddPhotoActivity : AppCompatActivity() {
     var PICK_IMAGE_FROM_ALBUM = 0
     var storage : FirebaseStorage? = null
     var photoUri : Uri? = null
-
+    var auth : FirebaseAuth? = null
+    var firestore : FirebaseFirestore? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +33,11 @@ class AddPhotoActivity : AppCompatActivity() {
 
         //Initialize storage
         storage = FirebaseStorage.getInstance()
+        auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
+
+
+
 
         //Open the album
         var photoPickerIntent = Intent(Intent.ACTION_PICK)
@@ -37,16 +46,14 @@ class AddPhotoActivity : AppCompatActivity() {
             if(it.resultCode==Activity.RESULT_OK){
                 photoUri = it.data?.data
                 addphoto_image.setImageURI(photoUri)
-
             }
             else{
                 finish()
             }
         }.launch(photoPickerIntent)
-        //startActivityForResult(photoPickerIntent,PICK_IMAGE_FROM_ALBUM)
+
 
         add_photon_btn.setOnClickListener {
-            Log.e(TAG,"PICKPCIK")
             contentUpload()
         }
 
@@ -55,20 +62,32 @@ class AddPhotoActivity : AppCompatActivity() {
     private fun contentUpload() {
 
         //Make filename
-            var timestamp = SimpleDateFormat("yyyyMMddmmss").format(Date())
-            var imageFilename = "Image_" + timestamp + "_.png"
-            var  storageRef = storage?.reference?.child("images")?.child(imageFilename)
+        var timestamp = SimpleDateFormat("yyyyMMddmmss").format(Date())
+        var imageFilename = "Image_" + timestamp + "_.png"
+        var storageRef = storage?.reference?.child("images")?.child(imageFilename)
 
 
-        //FilreUpload
-            storageRef?.putFile(photoUri!!)?.addOnSuccessListener {
-                Toast.makeText(this,getString(R.string.upload_success),Toast.LENGTH_SHORT).show()
-            }
+
+        storageRef?.putFile(photoUri!!)?.continueWithTask {
+            return@continueWithTask storageRef.downloadUrl
+        }?.addOnSuccessListener {
+            var contentDTO = ContentDTO()
+
+            contentDTO.imageUrl = it.toString()
+            contentDTO.uid = auth?.currentUser?.uid
+            contentDTO.explain = addphoto_edit_explain.toString()
+            contentDTO.userId = auth?.currentUser?.email
+            contentDTO.timeStamp = System.currentTimeMillis()
+
+            firestore?.collection("images")?.document()?.set(contentDTO)
+            setResult(Activity.RESULT_OK)
+            finish()
+        }
+
 
     }
 
 
-
-    }
+}
 
 
