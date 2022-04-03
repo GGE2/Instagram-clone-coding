@@ -1,12 +1,21 @@
 package com.example.ggestagram.navigation
 
+import android.content.ContentValues.TAG
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.ggestagram.R
+import com.example.ggestagram.navigation.model.ContentDTO
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.android.synthetic.main.activity_add_photo.view.*
+import kotlinx.android.synthetic.main.fragment_detail_view.view.*
+import kotlinx.android.synthetic.main.item_detail.view.*
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -22,6 +31,10 @@ class DetailViewFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+    var firestore : FirebaseFirestore? = null
+
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,15 +45,79 @@ class DetailViewFragment : Fragment() {
     }
 
     override fun onCreateView(
+
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         var view = LayoutInflater.from(activity).inflate(R.layout.fragment_detail_view,container,false)
+        firestore =  FirebaseFirestore.getInstance()
 
 
+        view.detailView_recylerview.adapter = DetailViewRecylerViewAdapter()
+        view.detailView_recylerview.layoutManager = LinearLayoutManager(activity)
         return view
     }
+    inner class DetailViewRecylerViewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+        var contentDTOs : ArrayList<ContentDTO> = arrayListOf()
+        var contentUidList : ArrayList<String> = arrayListOf()
+
+        init {
+
+
+            firestore?.collection("images")?.orderBy("timeStamp")?.addSnapshotListener { value, error ->
+
+                contentDTOs.clear()
+                contentUidList.clear()
+
+                for(snapshot in value!!.documents){
+                    var data = snapshot.toObject(ContentDTO::class.java)
+                    contentDTOs.add(data!!)
+                    contentUidList.add(snapshot.id)
+
+                }
+                    notifyDataSetChanged()
+
+            }
+
+
+
+        }
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            var view = LayoutInflater.from(parent.context).inflate(R.layout.item_detail,parent,false)
+
+            return CustomViewHoler(view)
+        }
+
+        inner class CustomViewHoler(view: View?) : RecyclerView.ViewHolder(view!!) {
+
+        }
+
+        //inner class CustomViewHoler(view: View) : RecyclerView.ViewHolder(view)
+
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+
+            var viewholder = (holder as CustomViewHoler).itemView
+            //user명
+            viewholder.profile_textview.text = contentDTOs[position]!!.userId
+            //사진
+            Glide.with(holder.itemView.context).load(contentDTOs[position]!!.imageUrl).into(viewholder.imageview_content)
+            //설명
+            viewholder.explain_textview.text = contentDTOs[position]!!.explain
+            //좋아요
+            viewholder.favoritecounter_textview.text = "좋아요 " + contentDTOs[position]!!.favoriteCount + "개"
+            //프로필 사진
+            Glide.with(holder.itemView.context).load(contentDTOs[position]!!.imageUrl).into(viewholder.profile_image)
+
+
+        }
+
+        override fun getItemCount(): Int {
+            return contentDTOs.size
+        }
+    }
+
 
     companion object {
         /**

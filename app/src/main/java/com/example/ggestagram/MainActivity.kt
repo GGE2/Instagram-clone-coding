@@ -37,6 +37,8 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
         //사진 권한 확인
         ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),1)
 
+        bottom_navigation.selectedItemId = R.id.action_home
+
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
