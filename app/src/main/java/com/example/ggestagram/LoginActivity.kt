@@ -203,8 +203,6 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener{
                 signinEmail()
                 //Login if you have account
             }
-
-
         }
 
     }

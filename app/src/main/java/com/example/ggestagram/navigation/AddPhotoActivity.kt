@@ -68,6 +68,7 @@ class AddPhotoActivity : AppCompatActivity() {
 
 
 
+
         storageRef?.putFile(photoUri!!)?.continueWithTask {
             return@continueWithTask storageRef.downloadUrl
         }?.addOnSuccessListener {

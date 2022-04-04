@@ -2,6 +2,8 @@ package com.example.ggestagram.navigation
 
 import android.content.ContentValues.TAG
 import android.os.Bundle
+import android.os.Handler
+import android.os.SystemClock
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,8 +12,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.ggestagram.DoubleClickListener
 import com.example.ggestagram.R
 import com.example.ggestagram.navigation.model.ContentDTO
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_add_photo.view.*
 import kotlinx.android.synthetic.main.fragment_detail_view.view.*
@@ -29,11 +33,10 @@ private const val ARG_PARAM2 = "param2"
  */
 class DetailViewFragment : Fragment() {
     // TODO: Rename and change types of parameters
+    var uid :String? = null
     private var param1: String? = null
     private var param2: String? = null
-    var firestore : FirebaseFirestore? = null
-
-
+    var firestore: FirebaseFirestore? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,42 +53,46 @@ class DetailViewFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        var view = LayoutInflater.from(activity).inflate(R.layout.fragment_detail_view,container,false)
-        firestore =  FirebaseFirestore.getInstance()
-
+        var view =
+            LayoutInflater.from(activity).inflate(R.layout.fragment_detail_view, container, false)
+        firestore = FirebaseFirestore.getInstance()
+        uid = FirebaseAuth.getInstance().currentUser?.uid
 
         view.detailView_recylerview.adapter = DetailViewRecylerViewAdapter()
         view.detailView_recylerview.layoutManager = LinearLayoutManager(activity)
         return view
     }
+
     inner class DetailViewRecylerViewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-        var contentDTOs : ArrayList<ContentDTO> = arrayListOf()
-        var contentUidList : ArrayList<String> = arrayListOf()
+        var contentDTOs: ArrayList<ContentDTO> = arrayListOf()
+        var contentUidList: ArrayList<String> = arrayListOf()
 
         init {
 
 
-            firestore?.collection("images")?.orderBy("timeStamp")?.addSnapshotListener { value, error ->
+            firestore?.collection("images")?.orderBy("timeStamp")
+                ?.addSnapshotListener { value, error ->
 
-                contentDTOs.clear()
-                contentUidList.clear()
+                    contentDTOs.clear()
+                    contentUidList.clear()
 
-                for(snapshot in value!!.documents){
-                    var data = snapshot.toObject(ContentDTO::class.java)
-                    contentDTOs.add(data!!)
-                    contentUidList.add(snapshot.id)
+                    for (snapshot in value!!.documents) {
+                        var data = snapshot.toObject(ContentDTO::class.java)
+                        contentDTOs.add(data!!)
+                        contentUidList.add(snapshot.id)
 
-                }
+                    }
                     notifyDataSetChanged()
 
-            }
-
+                }
 
 
         }
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-            var view = LayoutInflater.from(parent.context).inflate(R.layout.item_detail,parent,false)
+            var view =
+                LayoutInflater.from(parent.context).inflate(R.layout.item_detail, parent, false)
 
             return CustomViewHoler(view)
         }
@@ -93,28 +100,64 @@ class DetailViewFragment : Fragment() {
         inner class CustomViewHoler(view: View?) : RecyclerView.ViewHolder(view!!) {
 
         }
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position:Int) {
 
-        //inner class CustomViewHoler(view: View) : RecyclerView.ViewHolder(view)
-
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
 
             var viewholder = (holder as CustomViewHoler).itemView
             //user명
             viewholder.profile_textview.text = contentDTOs[position]!!.userId
             //사진
-            Glide.with(holder.itemView.context).load(contentDTOs[position]!!.imageUrl).into(viewholder.imageview_content)
+            Glide.with(holder.itemView.context).load(contentDTOs[position]!!.imageUrl)
+                .into(viewholder.imageview_content)
             //설명
             viewholder.explain_textview.text = contentDTOs[position]!!.explain
             //좋아요
-            viewholder.favoritecounter_textview.text = "좋아요 " + contentDTOs[position]!!.favoriteCount + "개"
+            viewholder.favoritecounter_textview.text =
+                "좋아요 " + contentDTOs[position]!!.favoriteCount + "개"
             //프로필 사진
-            Glide.with(holder.itemView.context).load(contentDTOs[position]!!.imageUrl).into(viewholder.profile_image)
+            val into = Glide.with(holder.itemView.context).load(contentDTOs[position]!!.imageUrl)
+                .into(viewholder.profile_image)
 
+            viewholder.imageview_content.setOnClickListener(object : DoubleClickListener(){
+                override fun onDoubleClick(v: View) {
+                    Log.e(TAG,"onDoubleClick")
+                    favoirteEvent(holder.adapterPosition)
+                }
+            }
+        )
 
+            if(contentDTOs!![position].favorites.containsKey(uid)){
+                viewholder.favorite_imageview.setImageResource(R.drawable.ic_favorite)
+            }
+            else{
+                viewholder.favorite_imageview.setImageResource(R.drawable.ic_favorite_border)
+            }
         }
 
         override fun getItemCount(): Int {
             return contentDTOs.size
+        }
+
+
+
+        fun favoirteEvent(position: Int) {
+            var tsDoc = firestore?.collection("images")?.document(contentUidList[position])
+            firestore?.runTransaction {
+                var contentDTO = it.get(tsDoc!!).toObject(ContentDTO::class.java)
+
+                if (contentDTO!!.favorites.containsKey(uid)) {
+                    contentDTO?.favoriteCount = contentDTO?.favoriteCount - 1
+                    contentDTO?.favorites.remove(uid)
+
+                } else {
+                    contentDTO?.favoriteCount = contentDTO?.favoriteCount + 1
+                    contentDTO?.favorites[uid!!] = true
+
+                }
+                it.set(tsDoc, contentDTO)
+            }
+
+
         }
     }
 
@@ -139,3 +182,5 @@ class DetailViewFragment : Fragment() {
             }
     }
 }
+
+
