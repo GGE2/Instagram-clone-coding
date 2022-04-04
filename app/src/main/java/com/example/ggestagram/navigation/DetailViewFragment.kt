@@ -120,10 +120,10 @@ class DetailViewFragment : Fragment() {
 
             viewholder.imageview_content.setOnClickListener(object : DoubleClickListener(){
                 override fun onDoubleClick(v: View) {
-                    Log.e(TAG,"onDoubleClick")
                     favoirteEvent(holder.adapterPosition)
                 }
             }
+
         )
 
             if(contentDTOs!![position].favorites.containsKey(uid)){
