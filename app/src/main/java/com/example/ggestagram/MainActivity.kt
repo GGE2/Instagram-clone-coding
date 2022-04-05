@@ -23,8 +23,7 @@ import java.util.jar.Manifest
 import android.view.inputmethod.InputMethodManager
 
 import android.widget.EditText
-
-
+import com.google.firebase.auth.FirebaseAuth
 
 
 class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener  {
@@ -72,10 +71,15 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
                 return true
             }
             R.id.action_account -> {
+
                 var userFragment = UserFragment()
+                var uid = FirebaseAuth.getInstance().currentUser?.uid
+                var bundle = Bundle()
+
+                bundle.putString("destinationUid",uid)
+                userFragment.arguments = bundle
                 supportFragmentManager.beginTransaction().replace(R.id.main_content, userFragment)
                     .commit()
-
                 return true
             }
 

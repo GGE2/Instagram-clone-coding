@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -48,10 +49,16 @@ class UserFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        var view = LayoutInflater.from(activity).inflate(R.layout.fragment_user,container,false)
+        fragmentView = LayoutInflater.from(activity).inflate(R.layout.fragment_user,container,false)
+        uid = arguments?.getString("destinationUid")
+        firestore = FirebaseFirestore.getInstance()
+        auth = FirebaseAuth.getInstance()
+
+        fragmentView?.account_recylerview?.adapter = UserFragmentRecylerView()
+        fragmentView?.account_recylerview?.layoutManager = GridLayoutManager(activity,3)
 
 
-        return view
+        return fragmentView
     }
 
     inner class UserFragmentRecylerView : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
@@ -70,6 +77,7 @@ class UserFragment : Fragment() {
                         contentDTOs.add(data!!)
                     }
                     fragmentView?.account_tv_post_count?.text = contentDTOs.size.toString()
+
                     notifyDataSetChanged()
                 }
 
@@ -84,11 +92,12 @@ class UserFragment : Fragment() {
             var imageView = ImageView(parent.context)
 
             imageView.layoutParams = LinearLayoutCompat.LayoutParams(width,width)
+
             return CustomViewHolder(imageView)
 
         }
 
-        inner class CustomViewHolder(imageView: ImageView) : RecyclerView.ViewHolder(imageView) {
+        inner class CustomViewHolder(var imageView: ImageView) : RecyclerView.ViewHolder(imageView) {
 
         }
 

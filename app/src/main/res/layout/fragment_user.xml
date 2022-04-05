@@ -8,6 +8,7 @@
     tools:context=".navigation.UserFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/const0"
         android:layout_width="match_parent"
         android:layout_height="100dp"
         app:layout_constraintTop_toTopOf="parent"
@@ -124,7 +125,10 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/account_recylerview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/const0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 
 
