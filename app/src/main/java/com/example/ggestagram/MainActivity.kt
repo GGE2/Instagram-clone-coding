@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        setToolbarDefault()
         when (item.itemId) {
             R.id.action_home -> {
                 var detailViewFragment = DetailViewFragment()
@@ -87,6 +88,14 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
         }
 
         return false
+    }
+
+    fun setToolbarDefault(){
+        toolbar_btn_back.visibility = View.GONE
+        toolbar_tv_userid.visibility = View.GONE
+        toolbar_title_image.visibility = View.VISIBLE
+
+
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {

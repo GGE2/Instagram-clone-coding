@@ -231,7 +231,9 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener{
         if(user!=null){
             Log.e(TAG,"movemainpage ")
             startActivity(Intent(this,MainActivity::class.java))
+            finish()
         }
+
 
     }
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {

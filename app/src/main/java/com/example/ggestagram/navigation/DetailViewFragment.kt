@@ -102,7 +102,6 @@ class DetailViewFragment : Fragment() {
         }
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position:Int) {
 
-
             var viewholder = (holder as CustomViewHoler).itemView
             //user명
             viewholder.profile_textview.text = contentDTOs[position]!!.userId
@@ -125,13 +124,21 @@ class DetailViewFragment : Fragment() {
             }
 
         )
-
             if(contentDTOs!![position].favorites.containsKey(uid)){
                 viewholder.favorite_imageview.setImageResource(R.drawable.ic_favorite)
             }
             else{
                 viewholder.favorite_imageview.setImageResource(R.drawable.ic_favorite_border)
             }
+            viewholder.profile_image.setOnClickListener {
+                var userFragment = UserFragment()
+                var bundle = Bundle()
+                bundle.putString("destinationUid",contentDTOs[position].uid)
+                bundle.putString("userId",contentDTOs[position].userId)
+                activity?.supportFragmentManager?.beginTransaction()?.replace(R.id.main_content,userFragment)?.commit()
+
+            }
+
         }
 
         override fun getItemCount(): Int {
