@@ -24,6 +24,8 @@ import android.view.inputmethod.InputMethodManager
 
 import android.widget.EditText
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.android.synthetic.main.fragment_user.*
+import kotlinx.android.synthetic.main.item_detail.view.*
 
 
 class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener  {
@@ -115,4 +117,15 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
         return super.dispatchTouchEvent(ev)
     }
 
+    fun actionPickResult(){
+
+        var tex2 = UserFragment()
+
+
+
+
+
+
+
+    }
 }

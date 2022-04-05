@@ -1,5 +1,6 @@
 package com.example.ggestagram.navigation
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -8,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -93,6 +95,15 @@ class UserFragment : Fragment() {
         fragmentView?.account_recylerview?.layoutManager = GridLayoutManager(activity,3)
 
 
+        fragmentView?.asccount_iv_profile?.setOnClickListener {
+
+            var photoPickerIntent = Intent(Intent.ACTION_PICK)
+            photoPickerIntent.type = "images/*"
+
+
+        }
+
+
         return fragmentView
     }
 
@@ -162,11 +173,14 @@ class UserFragment : Fragment() {
          */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
+        val PICK_PROFILE_FROM_ALBUM = 10
+        val test = UserFragment().fragmentView?.asccount_iv_profile
         fun newInstance(param1: String, param2: String) =
             UserFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, param1)
                     putString(ARG_PARAM2, param2)
+
                  }
             }
     }
