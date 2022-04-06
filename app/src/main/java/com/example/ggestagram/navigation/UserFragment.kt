@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -110,8 +111,8 @@ class UserFragment : Fragment() {
             mainactivity?.toolbar_btn_back?.visibility = View.VISIBLE
 
 
-
         }
+
 
 
         fragmentView?.account_recylerview?.adapter = UserFragmentRecylerView()
@@ -127,9 +128,25 @@ class UserFragment : Fragment() {
 
         }
 
+        getProfileImage()
 
         return fragmentView
     }
+    fun getProfileImage(act: FragmentActivity){
+        firestore?.collection("profileImages")?.document(uid!!)?.addSnapshotListener { value, error ->
+            if (value == null)
+                return@addSnapshotListener
+            if (value.data != null) {
+                var url = value?.data!!["image"]
+                Glide.with(requireActivity()).load(url).apply(RequestOptions().circleCrop())
+                    .into(fragmentView?.asccount_iv_profile!!)
+
+
+
+            }
+        }
+    }
+
 
     inner class UserFragmentRecylerView : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
 
