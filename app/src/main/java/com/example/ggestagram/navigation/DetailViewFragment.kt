@@ -13,11 +13,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.ggestagram.DoubleClickListener
+import com.example.ggestagram.MainActivity
 import com.example.ggestagram.R
 import com.example.ggestagram.navigation.model.ContentDTO
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_add_photo.view.*
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_detail_view.view.*
 import kotlinx.android.synthetic.main.item_detail.view.*
 
@@ -135,7 +137,10 @@ class DetailViewFragment : Fragment() {
                 var bundle = Bundle()
                 bundle.putString("destinationUid",contentDTOs[position].uid)
                 bundle.putString("userId",contentDTOs[position].userId)
+                userFragment.arguments = bundle
                 activity?.supportFragmentManager?.beginTransaction()?.replace(R.id.main_content,userFragment)?.commit()
+                var mainActivity = activity as MainActivity
+                mainActivity?.bottom_navigation.selectedItemId = R.id.action_account
 
             }
 

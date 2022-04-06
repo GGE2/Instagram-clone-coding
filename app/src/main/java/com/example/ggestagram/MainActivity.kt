@@ -93,10 +93,10 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     }
 
     fun setToolbarDefault(){
+        Log.e(TAG,"SETTOOLBAR")
         toolbar_btn_back.visibility = View.GONE
         toolbar_tv_userid.visibility = View.GONE
         toolbar_title_image.visibility = View.VISIBLE
-
 
     }
 
@@ -117,15 +117,5 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
         return super.dispatchTouchEvent(ev)
     }
 
-    fun actionPickResult(){
 
-        var tex2 = UserFragment()
-
-
-
-
-
-
-
-    }
 }

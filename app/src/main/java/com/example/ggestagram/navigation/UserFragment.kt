@@ -21,6 +21,7 @@ import com.example.ggestagram.R
 import com.example.ggestagram.navigation.model.ContentDTO
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_user.view.*
 
@@ -43,12 +44,36 @@ class UserFragment : Fragment() {
     var uid:String? = null
     var auth: FirebaseAuth? = null
     var currentUserUid : String? = null
-    override fun onCreate(savedInstanceState: Bundle?) {
+    val content = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+
+        if (it.resultCode == Activity.RESULT_OK) {
+            var imageUri = it.data?.data
+            var uid = FirebaseAuth.getInstance().currentUser?.uid
+            var storageRef = FirebaseStorage.getInstance().reference.child("userProfileImages")
+                .child(uid!!)
+            storageRef.putFile(imageUri!!).continueWithTask {
+                return@continueWithTask storageRef.downloadUrl
+            }.addOnSuccessListener {
+                var map = HashMap<String, Any>()
+                map["image"] = it.toString()
+                FirebaseFirestore.getInstance().collection("profileImages")
+                    .document(uid!!).set(map)
+
+
+            }
+
+
+        }
+    }
+
+        override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+
+
     }
 
     override fun onCreateView(
@@ -60,8 +85,6 @@ class UserFragment : Fragment() {
         firestore = FirebaseFirestore.getInstance()
         auth = FirebaseAuth.getInstance()
         currentUserUid = auth?.uid
-
-
         //자신의 정보일 경우
         if(uid ==currentUserUid){
             fragmentView?.account_btn_follow_signout?.text = getString(R.string.signout)
@@ -75,8 +98,8 @@ class UserFragment : Fragment() {
         }
         //다른 사람의 정보일 경우
         else{
-            fragmentView?.account_tv_following?.text = getString(R.string.follow)
-            var mainactivity = activity as MainActivity
+            fragmentView?.account_btn_follow_signout?.text = getString(R.string.follow)
+            var mainactivity = (activity as MainActivity)
             mainactivity?.toolbar_tv_userid?.text = arguments?.getString("userId")
             mainactivity?.toolbar_btn_back?.setOnClickListener {
                 mainactivity.bottom_navigation.selectedItemId = R.id.action_home
@@ -98,7 +121,8 @@ class UserFragment : Fragment() {
         fragmentView?.asccount_iv_profile?.setOnClickListener {
 
             var photoPickerIntent = Intent(Intent.ACTION_PICK)
-            photoPickerIntent.type = "images/*"
+            photoPickerIntent.type = "image/*"
+            content.launch(photoPickerIntent)
 
 
         }
@@ -174,7 +198,8 @@ class UserFragment : Fragment() {
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         val PICK_PROFILE_FROM_ALBUM = 10
-        val test = UserFragment().fragmentView?.asccount_iv_profile
+
+
         fun newInstance(param1: String, param2: String) =
             UserFragment().apply {
                 arguments = Bundle().apply {
