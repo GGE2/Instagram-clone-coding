@@ -1,6 +1,7 @@
 package com.example.ggestagram.navigation
 
 import android.content.ContentValues.TAG
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.SystemClock
@@ -61,7 +62,12 @@ class DetailViewFragment : Fragment() {
         uid = FirebaseAuth.getInstance().currentUser?.uid
 
         view.detailView_recylerview.adapter = DetailViewRecylerViewAdapter()
-        view.detailView_recylerview.layoutManager = LinearLayoutManager(activity)
+        val manager = LinearLayoutManager(activity)
+        manager.reverseLayout = true
+        manager.stackFromEnd = true
+        view.detailView_recylerview.layoutManager = manager
+
+
         return view
     }
 
@@ -141,6 +147,14 @@ class DetailViewFragment : Fragment() {
                 activity?.supportFragmentManager?.beginTransaction()?.replace(R.id.main_content,userFragment)?.commit()
 //                var mainActivity = activity as MainActivity
 //                mainActivity?.bottom_navigation.selectedItemId = R.id.action_account
+
+            }
+            viewholder.comment_imageview.setOnClickListener {
+                var intent = Intent(view?.context,CommentActivity::class.java)
+                intent.putExtra("contentUid",contentUidList[position])
+                startActivity(intent)
+
+
 
             }
 

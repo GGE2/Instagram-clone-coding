@@ -57,9 +57,10 @@ class GridFragment : Fragment() {
 
         var contentDTOs : ArrayList<ContentDTO> = arrayListOf()
 
+
+
         init{
             firestore?.collection("images")?.addSnapshotListener { value, error ->
-
                 if(value == null) {
                     return@addSnapshotListener
                 }
