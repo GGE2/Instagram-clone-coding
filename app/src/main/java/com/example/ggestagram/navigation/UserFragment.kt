@@ -132,20 +132,6 @@ class UserFragment : Fragment() {
 
         return fragmentView
     }
-    fun getProfileImage(act: FragmentActivity){
-        firestore?.collection("profileImages")?.document(uid!!)?.addSnapshotListener { value, error ->
-            if (value == null)
-                return@addSnapshotListener
-            if (value.data != null) {
-                var url = value?.data!!["image"]
-                Glide.with(requireActivity()).load(url).apply(RequestOptions().circleCrop())
-                    .into(fragmentView?.asccount_iv_profile!!)
-
-
-
-            }
-        }
-    }
 
 
     inner class UserFragmentRecylerView : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
@@ -226,5 +212,16 @@ class UserFragment : Fragment() {
                  }
             }
     }
+    fun getProfileImage(){
+        firestore?.collection("profileImages")?.document(uid!!)?.addSnapshotListener { value, error ->
+            if (value == null) return@addSnapshotListener
+            if (value.data != null) {
+                var url = value?.data!!["image"]
+                Glide.with(requireActivity()).load(url).apply(RequestOptions().circleCrop()).into(fragmentView?.asccount_iv_profile!!)
+
+            }
+        }
+    }
+
 
 }
