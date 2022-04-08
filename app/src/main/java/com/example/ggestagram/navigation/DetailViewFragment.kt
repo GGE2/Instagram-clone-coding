@@ -139,8 +139,8 @@ class DetailViewFragment : Fragment() {
                 bundle.putString("userId",contentDTOs[position].userId)
                 userFragment.arguments = bundle
                 activity?.supportFragmentManager?.beginTransaction()?.replace(R.id.main_content,userFragment)?.commit()
-                var mainActivity = activity as MainActivity
-                mainActivity?.bottom_navigation.selectedItemId = R.id.action_account
+//                var mainActivity = activity as MainActivity
+//                mainActivity?.bottom_navigation.selectedItemId = R.id.action_account
 
             }
 

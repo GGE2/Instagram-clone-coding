@@ -2,6 +2,7 @@ package com.example.ggestagram.navigation
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.PorterDuff
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -11,6 +12,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +22,7 @@ import com.example.ggestagram.LoginActivity
 import com.example.ggestagram.MainActivity
 import com.example.ggestagram.R
 import com.example.ggestagram.navigation.model.ContentDTO
+import com.example.ggestagram.navigation.model.FollowerDTO
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -109,7 +112,9 @@ class UserFragment : Fragment() {
             mainactivity?.toolbar_title_image?.visibility = View.GONE
             mainactivity?.toolbar_tv_userid?.visibility = View.VISIBLE
             mainactivity?.toolbar_btn_back?.visibility = View.VISIBLE
-
+            fragmentView?.account_btn_follow_signout?.setOnClickListener {
+                requestFollow()
+            }
 
         }
 
@@ -129,8 +134,99 @@ class UserFragment : Fragment() {
         }
 
         getProfileImage()
-
+        getFollowandFollowing()
         return fragmentView
+    }
+    fun getFollowandFollowing(){
+        firestore?.collection("users")?.document(uid!!)?.addSnapshotListener { value, error ->
+            if( value == null){
+                return@addSnapshotListener
+            }
+            var followDTO = value.toObject(FollowerDTO::class.java)
+            if(followDTO?.followingCount!=null){
+                fragmentView?.account_tv_following_counter?.text = followDTO?.followingCount?.toString()
+            }
+            if(followDTO?.followerCount!=null){
+                fragmentView?.account_tv_follower_counter?.text = followDTO?.followerCount?.toString()
+                if(followDTO?.followers.containsKey(currentUserUid!!)){
+                    fragmentView?.account_btn_follow_signout?.text = getString(R.string.follow_cancel)
+                    fragmentView?.account_btn_follow_signout?.background?.setColorFilter(ContextCompat.getColor(requireActivity(),R.color.colorLightGray),PorterDuff.Mode.MULTIPLY)
+                }
+                else{
+                    fragmentView?.account_btn_follow_signout?.text = getString(R.string.follow)
+                    if(uid != currentUserUid){
+                        fragmentView?.account_btn_follow_signout?.background?.colorFilter = null
+
+                    }
+                }
+            }
+
+
+
+        }
+    }
+
+
+    fun requestFollow(){
+        // my follower
+        var tsDocFollowing = firestore?.collection("users")?.document(currentUserUid!!)
+        firestore?.runTransaction {
+             var followDTO =  it.get(tsDocFollowing!!).toObject(FollowerDTO::class.java)
+
+            if (followDTO == null){
+                followDTO = FollowerDTO()
+                followDTO!!.followingCount = 1
+                followDTO!!.followers[uid!!] = true
+
+                it.set(tsDocFollowing,followDTO)
+                return@runTransaction
+            }
+
+            if(followDTO.following.containsKey(uid)){
+                followDTO?.followingCount = followDTO?.followingCount - 1
+                followDTO?.followers?.remove(uid)
+            }else{
+                followDTO?.followingCount = followDTO?.followingCount + 1
+                followDTO?.followers[uid!!] = true
+            }
+
+                it.set(tsDocFollowing,followDTO)
+            return@runTransaction
+        }
+
+        var tsDocFollower = firestore?.collection("users")?.document(uid!!)
+            firestore?.runTransaction {
+                var followDTO = it.get(tsDocFollower!!).toObject(FollowerDTO::class.java)
+                if(followDTO == null){
+                    followDTO = FollowerDTO()
+                    followDTO!!.followerCount = 1
+                    followDTO!!.followers[currentUserUid!!] = true
+
+                    it.set(tsDocFollower,followDTO!!)
+                    return@runTransaction
+
+                }
+
+
+                if(followDTO!!.followers.containsKey(currentUserUid)){
+                    followDTO!!.followerCount = followDTO!!.followerCount - 1
+                    followDTO!!.followers.remove(currentUserUid!!)
+
+                }
+                else{
+                    followDTO!!.followerCount = followDTO!!.followerCount + 1
+                    followDTO!!.followers[currentUserUid!!] = true
+
+                }
+                    it.set(tsDocFollower,followDTO!!)
+                return@runTransaction
+
+
+            }
+
+        //
+
+
     }
 
 
